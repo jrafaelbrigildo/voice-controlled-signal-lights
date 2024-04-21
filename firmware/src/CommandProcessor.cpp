@@ -219,7 +219,7 @@ CommandProcessor::CommandProcessor()
     }
     // kick off the command processor task
     TaskHandle_t command_queue_task_handle;
-    xTaskCreate(commandQueueProcessorTask, "Command Queue Processor", 1024, this, 1, &command_queue_task_handle);
+    xTaskCreate(commandQueueProcessorTask, "Command Queue Processor", 2048, this, 1, &command_queue_task_handle);
 }
 
 void CommandProcessor::queueCommand(uint16_t commandIndex, float best_score)
