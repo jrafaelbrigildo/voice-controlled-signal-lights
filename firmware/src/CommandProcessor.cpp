@@ -62,22 +62,16 @@ int stop[] = {
 
 
 int slow[] = {
-4,5,6,7,8,9,10,11,
-20,21,22,23,24,25,26,27,
-36,37,38,39,40,41,42,43,
-52,53,54,55,56,57,58,59,
-68,69,70,71,72,73,74,75,
-84,85,86,87,88,89,90,91,
-100,101,102,103,104,105,106,107,
-116,117,118,119,120,121,122,123,
-132,133,134,135,136,137,138,139,
-145,146,147,148,149,150,151,152,153,154,155,156,157,158,
-162,163,164,165,166,167,168,169,170,171,172,173,
-179,180,181,182,183,184,185,186,187,188,
-196,197,198,199,200,201,202,203,
-213,214,215,216,217,218,
-230,231,232,233,
-247,248
+25,37,38,57,58,59,67,68,69,70,71,72,73,74,75,
+76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,
+91,92,93,97,98,99,100,101,102,103,104,105,106,
+107,108,109,110,111,112,113,114,115,116,117,118,
+119,120,121,122,123,124,125,126,127,128,129,130,
+131,132,133,134,135,136,137,138,139,140,141,142,143,
+144,145,146,147,148,149,150,151,152,153,154,155,156,
+157,158,162,163,164,165,166,167,168,169,170,171,172,
+173,174,175,176,177,178,179,180,181,182,183,184,185,
+186,187,188,196,197,198,217,218,230,
 };
 
 bool patternActive = false;
@@ -162,36 +156,30 @@ void displayPattern(int patternIndex) {
 
 void CommandProcessor::processCommand(uint16_t commandIndex)
 { 
-    switch (commandIndex)
-    {
-    case 0: // slow
-        patternActive = true;
-        currentPattern = 0;
-        blinkCount = 0; // Reset blink count when pattern starts
-        break;
-    case 1: // left
-        patternActive = true;
-        currentPattern = 1;
-        blinkCount = 0; // Reset blink count when pattern starts
-        break;
-    case 2: // right
-        patternActive = true;
-        currentPattern = 2;
-        FastLED.clear(); // Clear LEDs immediately for case 2
-        displayPattern(currentPattern); // Display LEDs without delay
-        patternActive = false; // Turn off pattern immediately for case 2
-        break;
-    case 3: // stop
-        patternActive = true;
-        currentPattern = 3;
-        blinkCount = 0; // Reset blink count when pattern starts
-        break;
-    default:
-        patternActive = false;
-        FastLED.clear();
-        FastLED.show();
-    } 
-    if (patternActive && currentPattern != 2) { // Skip blinking for case 2
+    if (commandIndex == 0) {
+      patternActive = true;
+      currentPattern = 0;
+      blinkCount = 0; // Reset blink count when pattern starts
+    } else if (commandIndex == 1) {
+      patternActive = true;
+      currentPattern = 1;
+      blinkCount = 0; // Reset blink count when pattern starts
+    } else if (commandIndex == 2) {
+      patternActive = true;
+      currentPattern = 2;
+      blinkCount = 0; // Reset blink count when pattern starts
+      } else if (commandIndex == 3) {
+      patternActive = true;
+      currentPattern = 3;
+      FastLED.clear(); // Clear LEDs immediately for case 2
+      displayPattern(currentPattern); // Display LEDs without delay
+      patternActive = false; // Turn off pattern immediately for case 2
+    } else {
+      patternActive = false;
+      FastLED.clear();
+      FastLED.show();
+    }
+    if (patternActive && currentPattern != 3) { // Skip blinking for case 2
     displayPattern(currentPattern);
     delay(500); // Delay for pattern visibility
     FastLED.clear(); // Turn off pattern
@@ -227,7 +215,7 @@ void CommandProcessor::queueCommand(uint16_t commandIndex, float best_score)
     // unsigned long now = millis();
     if (commandIndex != 5 && commandIndex != -1)
     {
-        Serial.printf("*** %ld Detected command %s(%f)\n", millis(), words[commandIndex], best_score);
+        Serial.printf("* %ld Detected command %s(%f)\n", millis(), words[commandIndex], best_score);
         if (xQueueSendToBack(m_command_queue_handle, &commandIndex, 0) != pdTRUE)
         {
             Serial.println("No more space for command");
