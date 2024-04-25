@@ -156,29 +156,35 @@ void displayPattern(int patternIndex) {
 
 void CommandProcessor::processCommand(uint16_t commandIndex)
 { 
-    if (commandIndex == 0) {
-      patternActive = true;
-      currentPattern = 0;
-      blinkCount = 0; // Reset blink count when pattern starts
-    } else if (commandIndex == 1) {
-      patternActive = true;
-      currentPattern = 1;
-      blinkCount = 0; // Reset blink count when pattern starts
-    } else if (commandIndex == 2) {
-      patternActive = true;
-      currentPattern = 2;
-      blinkCount = 0; // Reset blink count when pattern starts
-      } else if (commandIndex == 3) {
-      patternActive = true;
-      currentPattern = 3;
-      FastLED.clear(); // Clear LEDs immediately for case 2
-      displayPattern(currentPattern); // Display LEDs without delay
-      patternActive = false; // Turn off pattern immediately for case 2
-    } else {
-      patternActive = false;
-      FastLED.clear();
-      FastLED.show();
-    }
+    switch(commandIndex) {
+    case 0:
+        patternActive = true;
+        currentPattern = 0;
+        blinkCount = 0; // Reset blink count when pattern starts
+        break;
+    case 1:
+        patternActive = true;
+        currentPattern = 1;
+        blinkCount = 0; // Reset blink count when pattern starts
+        break;
+    case 2:
+        patternActive = true;
+        currentPattern = 2;
+        blinkCount = 0; // Reset blink count when pattern starts
+        break;
+    case 3:
+        patternActive = true;
+        currentPattern = 3;
+        FastLED.clear(); // Clear LEDs immediately for case 2
+        displayPattern(currentPattern); // Display LEDs without delay
+        patternActive = false; // Turn off pattern immediately for case 2
+        break;
+    default:
+        patternActive = false;
+        FastLED.clear();
+        FastLED.show();
+        break;
+}
     if (patternActive && currentPattern != 3) { // Skip blinking for case 2
     displayPattern(currentPattern);
     delay(500); // Delay for pattern visibility

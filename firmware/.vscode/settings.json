@@ -49,5 +49,5 @@
         "string": "cpp"
     },
     "idf.portWin": "COM10",
-    "cmake.sourceDirectory": "C:/Users/user/OneDrive/Documents/Github/voice-controlled-signal-lights/firmware/.pio/libdeps/esp32-s3-devkitc-1/Unity"
+    "cmake.sourceDirectory": "C:/Users/user/OneDrive/Documents/Github/voice-controlled-signal-lights/firmware/.pio/libdeps/esp32-s3-devkitc-1/FastLED"
 }
