@@ -74,10 +74,6 @@ int slow[] = {
 186,187,188,196,197,198,217,218,230,
 };
 
-bool patternActive = false;
-int currentPattern = 0;
-int blinkCount = 0;
-const int maxBlinks = 10; // Maximum number of blinks before turning off
 
 bool isInArray(int val, int arr[], int size) {
   for (int i = 0; i < size; i++) {
@@ -154,51 +150,83 @@ void displayPattern(int patternIndex) {
   FastLED.show(); // Show LEDs after processing each case
 }
 
+bool patternActive = false;
+int currentPattern;
+int blinkCount = 0;
+const int maxBlinks = 10;   // maximum number of blinks
+
 void CommandProcessor::processCommand(uint16_t commandIndex)
 { 
-    switch(commandIndex) {
+   switch(commandIndex) {
     case 0:
-        patternActive = true;
-        currentPattern = 0;
-        blinkCount = 0; // Reset blink count when pattern starts
-        break;
-    case 1:
-        patternActive = true;
-        currentPattern = 1;
-        blinkCount = 0; // Reset blink count when pattern starts
-        break;
-    case 2:
-        patternActive = true;
-        currentPattern = 2;
-        blinkCount = 0; // Reset blink count when pattern starts
-        break;
-    case 3:
-        patternActive = true;
-        currentPattern = 3;
-        FastLED.clear(); // Clear LEDs immediately for case 2
-        displayPattern(currentPattern); // Display LEDs without delay
-        patternActive = false; // Turn off pattern immediately for case 2
-        break;
-    default:
-        patternActive = false;
-        FastLED.clear();
+      patternActive = true;
+      currentPattern = 0;
+      blinkCount = 0; // Reset blink count when pattern starts
+      while (patternActive && currentPattern == 0) {
+        displayPattern(currentPattern); // Display pattern immediately
+        vTaskDelay(500 / portTICK_PERIOD_MS); // Delay for pattern visibility
+        FastLED.clear(); // Turn off pattern
         FastLED.show();
-        break;
-}
-    if (patternActive && currentPattern != 3) { // Skip blinking for case 2
-    displayPattern(currentPattern);
-    delay(500); // Delay for pattern visibility
-    FastLED.clear(); // Turn off pattern
-    FastLED.show();
-    delay(500); // Delay before next blink
-    blinkCount++; // Increment blink count
-    if (blinkCount >= maxBlinks) {
-      patternActive = false; // Turn off pattern after max blinks
+        vTaskDelay(500 / portTICK_PERIOD_MS); // Delay before next blink
+        blinkCount++; // Increment blink count
+        if (blinkCount >= maxBlinks || xQueuePeek(m_command_queue_handle, &commandIndex, 0) == pdTRUE) {
+          patternActive = false; // Turn off pattern after max blinks or if command changed
+          FastLED.clear();
+          FastLED.show();
+        }
+      }
+      break;
+    case 1:
+      patternActive = true;
+      currentPattern = 1;
+      blinkCount = 0; // Reset blink count when pattern starts
+      while (patternActive && currentPattern == 1) {
+        displayPattern(currentPattern); // Display pattern immediately
+        vTaskDelay(500 / portTICK_PERIOD_MS); // Delay for pattern visibility
+        FastLED.clear(); // Turn off pattern
+        FastLED.show();
+        vTaskDelay(500 / portTICK_PERIOD_MS); // Delay before next blink
+        blinkCount++; // Increment blink count
+        if (blinkCount >= maxBlinks || xQueuePeek(m_command_queue_handle, &commandIndex, 0) == pdTRUE) {
+          patternActive = false; // Turn off pattern after max blinks or if command changed
+          FastLED.clear();
+          FastLED.show();
+        }
+      }
+      break;
+    case 2:
+      patternActive = true;
+      currentPattern = 2;
+      blinkCount = 0; // Reset blink count when pattern starts
+      while (patternActive && currentPattern == 2) {
+        displayPattern(currentPattern); // Display pattern immediately
+        vTaskDelay(500 / portTICK_PERIOD_MS); // Delay for pattern visibility
+        FastLED.clear(); // Turn off pattern
+        FastLED.show();
+        vTaskDelay(500 / portTICK_PERIOD_MS); // Delay before next blink
+        blinkCount++; // Increment blink count
+        if (blinkCount >= maxBlinks || xQueuePeek(m_command_queue_handle, &commandIndex, 0) == pdTRUE) {
+          patternActive = false; // Turn off pattern after max blinks or if command changed
+          FastLED.clear();
+          FastLED.show();
+        }
+      }
+      break;
+    case 3:
+      patternActive = true;
+      currentPattern = 3;
+      FastLED.clear(); // Clear LEDs immediately for case 3
+      displayPattern(currentPattern); // Display LEDs without delay
+      patternActive = false; // Turn off pattern immediately for case 3
+      break;
+    default:
+      patternActive = false;
       FastLED.clear();
       FastLED.show();
-    }
   }
 }
+
+
 CommandProcessor::CommandProcessor()
 {
     FastLED.addLeds<WS2812B, GPIO_NUM_9, RGB>(leds, NUM_LEDS);
