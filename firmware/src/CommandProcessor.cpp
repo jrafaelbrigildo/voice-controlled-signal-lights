@@ -62,16 +62,12 @@ int stop[] = {
 
 
 int slow[] = {
-25,37,38,57,58,59,67,68,69,70,71,72,73,74,75,
-76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,
-91,92,93,97,98,99,100,101,102,103,104,105,106,
-107,108,109,110,111,112,113,114,115,116,117,118,
-119,120,121,122,123,124,125,126,127,128,129,130,
-131,132,133,134,135,136,137,138,139,140,141,142,143,
-144,145,146,147,148,149,150,151,152,153,154,155,156,
-157,158,162,163,164,165,166,167,168,169,170,171,172,
-173,174,175,176,177,178,179,180,181,182,183,184,185,
-186,187,188,196,197,198,217,218,230,
+  7,8,22,23,24,25,37,38,39,40,41,42,52,53,54,
+  57,58,59,67,68,69,74,75,76,83,84,
+  91,92,99,108,147,
+  156,163,164,171,172,179,180,181,
+  186,187,188,196,197,198,201,202,203,213,214,
+  215,216,217,218,230,231,232,233,247,248
 };
 
 
@@ -108,28 +104,30 @@ void commandQueueProcessorTask(void *param)
 void displayPattern(int patternIndex) {
   switch (patternIndex) {
     case 0:
-      FastLED.setBrightness(10);
+      FastLED.setBrightness(40);
       for (int i = 0; i < NUM_LEDS; i++) {
         if (isInArray(i, slow, sizeof(slow) / sizeof(slow[0]))) {
-          leds[i] = CRGB::Gray;
+          leds[i] = CRGB::Yellow;
         } else {
           leds[i] = CRGB::Black;
         }
       }
       break;
     case 1:
+      FastLED.setBrightness(40);
       for (int i = 0; i < NUM_LEDS; i++) {
         if (isInArray(i, left, sizeof(left) / sizeof(left[0]))) {
-          leds[i] = CRGB::Yellow;
+          leds[i] = CRGB::Red;
         } else {
           leds[i] = CRGB::Black;
         }
       }
       break;
     case 2:
+      FastLED.setBrightness(40);
       for (int i = 0; i < NUM_LEDS; i++) {
         if (isInArray(i, right, sizeof(right) / sizeof(right[0]))) {
-          leds[i] = CRGB::Yellow;
+          leds[i] = CRGB::Red;
         } else {
           leds[i] = CRGB::Black;
         }
@@ -137,7 +135,7 @@ void displayPattern(int patternIndex) {
       break; // Exit the switch statement after processing case 2
 
       case 3:
-        FastLED.setBrightness(10);
+        FastLED.setBrightness(35);
         for (int i = 0; i < NUM_LEDS; i++) {
             if (isInArray(i, stop, sizeof(stop) / sizeof(stop[0]))) {
             leds[i] = CRGB::Green;
@@ -213,12 +211,32 @@ void CommandProcessor::processCommand(uint16_t commandIndex)
       }
       break;
     case 3:
+    {
       patternActive = true;
       currentPattern = 3;
-      FastLED.clear(); // Clear LEDs immediately for case 3
-      displayPattern(currentPattern); // Display LEDs without delay
-      patternActive = false; // Turn off pattern immediately for case 3
+      uint32_t startTime = xTaskGetTickCount(); // Record the start time
+      while (patternActive && currentPattern == 3) {
+        displayPattern(currentPattern); // Display pattern immediately
+        FastLED.clear(); // Turn off pattern
+        FastLED.show();
+        
+        // Check if a new command has arrived
+        if (xQueuePeek(m_command_queue_handle, &commandIndex, 0) == pdTRUE) {
+          patternActive = false; // Turn off pattern if new command received
+          FastLED.clear();
+          FastLED.show();
+          break; // Exit the loop immediately
+        }
+        
+        // Check if 5 seconds have passed
+        if ((xTaskGetTickCount() - startTime) >= pdMS_TO_TICKS(5000)) {
+          patternActive = false; // Turn off pattern after 5 seconds
+          FastLED.clear();
+          FastLED.show();
+        }
+      }
       break;
+    }
     default:
       patternActive = false;
       FastLED.clear();
@@ -229,7 +247,7 @@ void CommandProcessor::processCommand(uint16_t commandIndex)
 
 CommandProcessor::CommandProcessor()
 {
-    FastLED.addLeds<WS2812B, GPIO_NUM_9, RGB>(leds, NUM_LEDS);
+    FastLED.addLeds<WS2812B, GPIO_NUM_8, RGB>(leds, NUM_LEDS);
     FastLED.setBrightness(3); // Adjust brightness as needed
     FastLED.clear();
     
