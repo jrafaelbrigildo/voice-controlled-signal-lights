@@ -85,6 +85,7 @@ const char *words[] = {
     "left",
     "right",
     "stop",
+    "off",
     "_invalid",
 };
 
@@ -151,7 +152,7 @@ void displayPattern(int patternIndex) {
 bool patternActive = false;
 int currentPattern;
 int blinkCount = 0;
-const int maxBlinks = 10;   // maximum number of blinks
+const int maxBlinks = 8;   // maximum number of blinks
 
 void CommandProcessor::processCommand(uint16_t commandIndex)
 { 
@@ -167,7 +168,7 @@ void CommandProcessor::processCommand(uint16_t commandIndex)
         FastLED.show();
         vTaskDelay(500 / portTICK_PERIOD_MS); // Delay before next blink
         blinkCount++; // Increment blink count
-        if (blinkCount >= maxBlinks || xQueuePeek(m_command_queue_handle, &commandIndex, 0) == pdTRUE) {
+        if (xQueuePeek(m_command_queue_handle, &commandIndex, 0) == pdTRUE) {
           patternActive = false; // Turn off pattern after max blinks or if command changed
           FastLED.clear();
           FastLED.show();
@@ -185,7 +186,7 @@ void CommandProcessor::processCommand(uint16_t commandIndex)
         FastLED.show();
         vTaskDelay(500 / portTICK_PERIOD_MS); // Delay before next blink
         blinkCount++; // Increment blink count
-        if (blinkCount >= maxBlinks || xQueuePeek(m_command_queue_handle, &commandIndex, 0) == pdTRUE) {
+        if (blinkCount >= maxBlinks || xQueuePeek(m_command_queue_handle, &commandIndex, 0) == pdTRUE){
           patternActive = false; // Turn off pattern after max blinks or if command changed
           FastLED.clear();
           FastLED.show();
@@ -229,7 +230,7 @@ void CommandProcessor::processCommand(uint16_t commandIndex)
         }
         
         // Check if 5 seconds have passed
-        if ((xTaskGetTickCount() - startTime) >= pdMS_TO_TICKS(5000)) {
+        if ((xTaskGetTickCount() - startTime) >= pdMS_TO_TICKS(3000)) {
           patternActive = false; // Turn off pattern after 5 seconds
           FastLED.clear();
           FastLED.show();
@@ -237,6 +238,11 @@ void CommandProcessor::processCommand(uint16_t commandIndex)
       }
       break;
     }
+    case 4:
+      patternActive = false;
+      FastLED.clear();
+      FastLED.show();
+      break;
     default:
       patternActive = false;
       FastLED.clear();
@@ -252,7 +258,7 @@ CommandProcessor::CommandProcessor()
     FastLED.clear();
     
     // allow up to 5 commands to be in flight at once
-    m_command_queue_handle = xQueueCreate(5, sizeof(uint16_t));
+    m_command_queue_handle = xQueueCreate(6, sizeof(uint16_t));
     if (!m_command_queue_handle)
     {
         Serial.println("Failed to create command queue");
@@ -265,7 +271,7 @@ CommandProcessor::CommandProcessor()
 void CommandProcessor::queueCommand(uint16_t commandIndex, float best_score)
 {
     // unsigned long now = millis();
-    if (commandIndex != 5 && commandIndex != -1)
+    if (commandIndex != 6 && commandIndex != -1)
     {
         Serial.printf("* %ld Detected command %s(%f)\n", millis(), words[commandIndex], best_score);
         if (xQueueSendToBack(m_command_queue_handle, &commandIndex, 0) != pdTRUE)
