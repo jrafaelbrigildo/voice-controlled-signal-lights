@@ -1,4 +1,5 @@
-# voice-controlled-signal-lights vest
+
+# Voice-Controlled Signal Lights Vest for Cyclist for Enhanced Safety and Communication on the Road
 
 ![Image of the Prototype](voice-controlled%20signal%20lights%20vest.jpg)
 
